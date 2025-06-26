@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Spirale des lieux à Paris</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    #map {
+      height: 100vh;
+      width: 100%;
+    }
+    .leaflet-marker-icon.bounce {
+      animation: bounce 0.5s ease;
+    }
+
+    @keyframes bounce {
+      0% { transform: scale(0.2); opacity: 0; }
+      50% { transform: scale(1.2); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    const center = [48.8566, 2.3522]; // Centre de Paris
+    const map = L.map('map').setView(center, 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap',
+      maxZoom: 19,
+    }).addTo(map);
+
+    // Liste des lieux à visiter
+    const lieux = [
+      "Tour Eiffel", "Musée du Louvre", "Montmartre", "Notre-Dame", 
+      "Champs-Élysées", "Jardin du Luxembourg", "Panthéon", 
+      "Opéra Garnier", "Pont Alexandre III", "Place de la Concorde"
+    ];
+
+    // Fonction de conversion spirale (angle en radians)
+    function spiralePosition(angle, rayon) {
+      // Approx : 1° de latitude ≈ 111 km ; 1° de longitude ≈ 78 km à Paris
+      const dLat = (Math.sin(angle) * rayon) / 111000;
+      const dLng = (Math.cos(angle) * rayon) / (78000);
+      return [center[0] + dLat, center[1] + dLng];
+    }
+
+    // Ajout progressif des marqueurs en spirale
+    lieux.forEach((lieu, i) => {
+      setTimeout(() => {
+        const angle = i * 0.8 * Math.PI;      // Espacement angulaire
+        const rayon = 100 + i * 80;           // Distance en mètres
+        const pos = spiralePosition(angle, rayon);
+
+        const marker = L.marker(pos).addTo(map)
+          .bindPopup(lieu)
+          .openPopup();
+
+        // Appliquer une classe animation
+        const icon = marker._icon;
+        if (icon) icon.classList.add('bounce');
+      }, i * 700); // délai entre chaque point (animation spirale)
+    });
+  </script>
+</body>
+</html>
